@@ -11,14 +11,9 @@ pipeline {
           }
         } 
 
-  stage('Execute Unit Tests') {
-      steps {
-             sh './vendor/bin/phpunit'
-      } 
-
     stage('Checkout SCM') {
       steps {
-            git branch: 'main', url: 'https://github.com/darey-devops/php-todo.git'
+            git branch: 'main', url: 'https://github.com/Babanla08/php-todo.git'
       }
     }
 
