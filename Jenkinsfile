@@ -9,7 +9,7 @@ pipeline {
               deleteDir()
             }
           }
-        } 
+        }
 
     stage('Checkout SCM') {
       steps {
