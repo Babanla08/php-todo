@@ -58,6 +58,13 @@ pipeline {
       }
     }
 
+    stage ('Package Artifact') {
+    steps {
+            sh 'zip -qr php-todo.zip ${WORKSPACE}/*'
+     }
+
+    }
+
       stage ('Upload Artifact to Artifactory') {
           steps {
             script { 
@@ -66,7 +73,7 @@ pipeline {
                     "files": [
                       {
                        "pattern": "php-todo.zip",
-                       "target": "PBL/php-todo",
+                       "target": "Devops14/php-todo",
                        "props": "type=zip;status=ready"
 
                        }
