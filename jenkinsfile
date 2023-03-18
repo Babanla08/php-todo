@@ -10,13 +10,11 @@ pipeline {
             }
           }
         }
-
     stage('Checkout SCM') {
       steps {
             git branch: 'main', url: 'https://github.com/Babanla08/php-todo.git'
       }
     }
-
     stage('Prepare Dependencies') {
       steps {
              sh 'mv .env.sample .env'
@@ -26,16 +24,18 @@ pipeline {
              sh 'php artisan key:generate'
       }
     }
-     stage('Execute Unit Tests') {
+    stage('Execute Unit Tests') {
       steps {
              sh './vendor/bin/phpunit'
       } 
   }
+
     stage('Code Analysis') {
       steps {
         sh 'phploc app/ --log-csv build/logs/phploc.csv'
-      }
-    }
+
+  }
+}
     stage('Plot Code Coverage Report') {
       steps {
 
@@ -50,8 +50,10 @@ pipeline {
             plot csvFileName: 'plot-396c4a6b-b573-41e5-85d8-73613b2ffffb.csv', csvSeries: [[displayTableFlag: false, exclusionValues: 'Logical Lines of Code (LLOC),Classes Length (LLOC),Functions Length (LLOC),LLOC outside functions or classes ', file: 'build/logs/phploc.csv', inclusionFlag: 'INCLUDE_BY_STRING', url: '']], group: 'phploc', numBuilds: '100', style: 'line', title: 'AB - Code Structure by Logical Lines of Code', yaxis: 'Logical Lines of Code'
             plot csvFileName: 'plot-396c4a6b-b573-41e5-85d8-73613b2ffffb.csv', csvSeries: [[displayTableFlag: false, exclusionValues: 'Functions,Named Functions,Anonymous Functions', file: 'build/logs/phploc.csv', inclusionFlag: 'INCLUDE_BY_STRING', url: '']], group: 'phploc', numBuilds: '100', style: 'line', title: 'H - Types of Functions', yaxis: 'Count'
             plot csvFileName: 'plot-396c4a6b-b573-41e5-85d8-73613b2ffffb.csv', csvSeries: [[displayTableFlag: false, exclusionValues: 'Interfaces,Traits,Classes,Methods,Functions,Constants', file: 'build/logs/phploc.csv', inclusionFlag: 'INCLUDE_BY_STRING', url: '']], group: 'phploc', numBuilds: '100', style: 'line', title: 'BB - Structure Objects', yaxis: 'Count'
+
       }
     }
+    
       stage('SonarQube Quality Gate') {
       when { branch pattern: "^develop*|^hotfix*|^release*|^main*", comparator: "REGEXP"}
         environment {
@@ -66,37 +68,42 @@ pipeline {
             }
         }
     }
+    
     stage ('Package Artifact') {
-    steps {
-            sh 'zip -qr php-todo.zip ${WORKSPACE}/*'
+      steps {
+        sh 'zip -qr php-todo.zip ${WORKSPACE}/*'
      }
 
     }
+          
     stage ('Upload Artifact to Artifactory') {
-          steps {
-            script { 
-                 def server = Artifactory.server 'artifactory-server'                 
-                 def uploadSpec = """{
-                    "files": [
-                      {
-                       "pattern": "php-todo.zip",
-                       "target": "PBL/php-todo",
-                       "props": "type=zip;status=ready"
+      steps {
+        script { 
+          def server = Artifactory.server 'artifactory-server'                 
+          def uploadSpec = """{
+            "files": [
+               {
+                "pattern": "php-todo.zip",
+                "target": "PBL/php-todo",
+                "props": "type=zip;status=ready"
 
                        }
                     ]
                  }""" 
 
-                 server.upload spec: uploadSpec
-               }
-            }
+        server.upload spec: uploadSpec
+      }
+      }
   
         }
-    stage ('Deploy to Dev Environment') {
-          steps {
-           build job: 'PROJECT-13I/main', parameters: [[$class: 'StringParameterValue', name: 'env', value: 'dev']], propagate: false, wait: true
+
+        stage ('Deploy to Dev Environment') {
+    steps {
+    build job: 'PROJECT-13I/main', parameters: [[$class: 'StringParameterValue', name: 'env', value: 'dev']], propagate: false, wait: true
     }
   }
-
- }
+  }
 }
+
+
+ 
